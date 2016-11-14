@@ -22,6 +22,7 @@ namespace StackExchange.Opserver.Data.SQL
         protected string ConnectionString { get; set; }
         public Version Version { get; internal set; } = new Version(); // default to 0.0
         protected SQLSettings.Instance Settings { get; }
+        public TimeZoneInfo ServerTimeZone => TimeZoneInfo.FindSystemTimeZoneById(Settings.TimeZone ?? "UTC");
         
         protected static readonly ConcurrentDictionary<Tuple<string, Version>, string> QueryLookup =
             new ConcurrentDictionary<Tuple<string, Version>, string>();

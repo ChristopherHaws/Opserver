@@ -12,12 +12,10 @@ namespace StackExchange.Opserver.Data.SQL
                 {
                     var sql = GetFetchSQL<WaitStatRecord>();
                     var results = await conn.QueryAsync<WaitStatRecord>(sql, new {secondsBetween = 15});
-
-                    var timezone = ServerProperties.Data.TimeZoneInfo;
-
+                    
                     foreach (var result in results)
                     {
-                        result.CreationDate = result.CreationDate.ToUniversalTime(timezone);
+                        result.CreationDate = result.CreationDate.ToUniversalTime(ServerTimeZone);
                     }
 
                     return results;

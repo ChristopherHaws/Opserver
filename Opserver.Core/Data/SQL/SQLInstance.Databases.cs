@@ -36,15 +36,13 @@ namespace StackExchange.Opserver.Data.SQL
                             await multi.ReadAsync<DatabaseFile>().ConfigureAwait(false).AsList().ConfigureAwait(false);
                         var vlfs =
                             await multi.ReadAsync<DatabaseVLF>().ConfigureAwait(false).AsList().ConfigureAwait(false);
-
-                        var timezone = ServerProperties.Data.TimeZoneInfo;
-
+                        
                         foreach (var backup in backups)
                         {
-                            backup.LastBackupStartDate = backup.LastBackupStartDate.ToUniversalTime(timezone);
-                            backup.LastBackupFinishDate = backup.LastBackupFinishDate.ToUniversalTime(timezone);
-                            backup.LastFullBackupStartDate = backup.LastFullBackupStartDate.ToUniversalTime(timezone);
-                            backup.LastFullBackupFinishDate = backup.LastFullBackupFinishDate.ToUniversalTime(timezone);
+                            backup.LastBackupStartDate = backup.LastBackupStartDate.ToUniversalTime(ServerTimeZone);
+                            backup.LastBackupFinishDate = backup.LastBackupFinishDate.ToUniversalTime(ServerTimeZone);
+                            backup.LastFullBackupStartDate = backup.LastFullBackupStartDate.ToUniversalTime(ServerTimeZone);
+                            backup.LastFullBackupFinishDate = backup.LastFullBackupFinishDate.ToUniversalTime(ServerTimeZone);
                         }
 
                         // Safe groups
@@ -75,12 +73,10 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<DatabaseTable>> GetTableInfo(string databaseName) =>
             DatabaseFetch<DatabaseTable>(databaseName, tranform: results =>
             {
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
                 foreach (var result in results)
                 {
-                    result.CreationDate = result.CreationDate.ToUniversalTime(timezone);
-                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(timezone);
+                    result.CreationDate = result.CreationDate.ToUniversalTime(ServerTimeZone);
+                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;
@@ -89,12 +85,10 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<DatabaseView>> GetViewInfo(string databaseName) =>
             DatabaseFetch<DatabaseView>(databaseName, 60.Seconds(), results =>
             {
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
                 foreach (var result in results)
                 {
-                    result.CreationDate = result.CreationDate.ToUniversalTime(timezone);
-                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(timezone);
+                    result.CreationDate = result.CreationDate.ToUniversalTime(ServerTimeZone);
+                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;
@@ -103,13 +97,11 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<StoredProcedure>> GetStoredProcedureInfo(string databaseName) =>
             DatabaseFetch<StoredProcedure>(databaseName, 60.Seconds(), results =>
             {
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
                 foreach (var result in results)
                 {
-                    result.CreationDate = result.CreationDate.ToUniversalTime(timezone);
-                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(timezone);
-                    result.LastExecuted = result.LastExecuted.ToUniversalTime(timezone);
+                    result.CreationDate = result.CreationDate.ToUniversalTime(ServerTimeZone);
+                    result.LastModifiedDate = result.LastModifiedDate.ToUniversalTime(ServerTimeZone);
+                    result.LastExecuted = result.LastExecuted.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;
@@ -118,12 +110,10 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<DatabaseBackup>> GetBackupInfo(string databaseName) =>
             DatabaseFetch<DatabaseBackup>(databaseName, RefreshInterval, results =>
             {
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
                 foreach (var result in results)
                 {
-                    result.StartDate = result.StartDate.ToUniversalTime(timezone);
-                    result.FinishDate = result.FinishDate.ToUniversalTime(timezone);
+                    result.StartDate = result.StartDate.ToUniversalTime(ServerTimeZone);
+                    result.FinishDate = result.FinishDate.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;
@@ -135,13 +125,11 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<RestoreHistory>> GetRestoreInfo(string databaseName) => 
             DatabaseFetch<RestoreHistory>(databaseName, RefreshInterval, results =>
             {
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
                 foreach (var result in results)
                 {
-                    result.RestoreFinishDate = result.RestoreFinishDate.ToUniversalTime(timezone);
-                    result.BackupStartDate = result.BackupStartDate.ToUniversalTime(timezone);
-                    result.BackupFinishDate = result.BackupFinishDate.ToUniversalTime(timezone);
+                    result.RestoreFinishDate = result.RestoreFinishDate.ToUniversalTime(ServerTimeZone);
+                    result.BackupStartDate = result.BackupStartDate.ToUniversalTime(ServerTimeZone);
+                    result.BackupFinishDate = result.BackupFinishDate.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;

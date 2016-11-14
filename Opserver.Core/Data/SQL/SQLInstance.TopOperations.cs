@@ -18,7 +18,7 @@ namespace StackExchange.Opserver.Data.SQL
                 {
                     if (options != null && options.LastRunSeconds.HasValue)
                     {
-                        var offset = ServerProperties.Data.TimeZoneInfo.GetUtcOffset(DateTime.UtcNow);
+                        var offset = TimeZoneInfo.FindSystemTimeZoneById(Settings.TimeZone ?? "UTC").GetUtcOffset(DateTime.UtcNow);
 
                         options.LastRunSeconds -= (Int32)offset.TotalSeconds;
                     }
@@ -30,11 +30,10 @@ namespace StackExchange.Opserver.Data.SQL
                     sql = sql.Replace("query_plan AS QueryPlan,", "")
                         .Replace("CROSS APPLY sys.dm_exec_query_plan(PlanHandle) AS qp", "");
                     var operations = conn.Query<TopOperation>(sql, options).AsList();
-
-                    var timezone = ServerProperties.Data.TimeZoneInfo;
+                    
                     foreach (var operation in operations)
                     {
-                        ConvertDateTimesToUtc(operation, timezone);
+                        ConvertDateTimesToUtc(operation, ServerTimeZone);
                     }
 
                     return operations;
@@ -43,12 +42,11 @@ namespace StackExchange.Opserver.Data.SQL
 
         public LightweightCache<TopOperation> GetTopOperation(byte[] planHandle, int? statementStartOffset = null)
         {
-            var timezone = ServerProperties.Data.TimeZoneInfo;
             var clause = " And (qs.plan_handle = @planHandle OR qs.sql_handle = @planHandle)";
             if (statementStartOffset.HasValue) clause += " And qs.statement_start_offset = @statementStartOffset";
             var sql = string.Format(GetFetchSQL<TopOperation>(), clause, "");
             return TimedCache(nameof(GetTopOperation) + "-" + planHandle.GetHashCode().ToString() + "-" + statementStartOffset.ToString(),
-                conn => ConvertDateTimesToUtc(conn.QueryFirstOrDefault<TopOperation>(sql, new { planHandle, statementStartOffset, MaxResultCount = 1 }), timezone),
+                conn => ConvertDateTimesToUtc(conn.QueryFirstOrDefault<TopOperation>(sql, new { planHandle, statementStartOffset, MaxResultCount = 1 }), ServerTimeZone),
                 60.Seconds(), 60.Seconds());
         }
 

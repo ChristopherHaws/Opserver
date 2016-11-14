@@ -14,18 +14,16 @@ namespace StackExchange.Opserver.Data.SQL
 
         public Cache<List<SQLJobInfo>> JobSummary => _jobSummary ?? (_jobSummary = SqlCacheList<SQLJobInfo>(2.Minutes(), async items =>
         {
-            var timezone = ServerProperties.Data.TimeZoneInfo;
-
             var results = await items;
 
             foreach (var result in results)
             {
-                result.DateCreated = result.DateCreated.ToUniversalTime(timezone);
-                result.DateModified = result.DateModified.ToUniversalTime(timezone);
-                result.LastRunRequestedDate = result.LastRunRequestedDate.ToUniversalTime(timezone);
-                result.LastStartDate = result.LastStartDate.ToUniversalTime(timezone);
-                result.LastStopDate = result.LastStopDate.ToUniversalTime(timezone);
-                result.NextRunDate = result.NextRunDate.ToUniversalTime(timezone);
+                result.DateCreated = result.DateCreated.ToUniversalTime(ServerTimeZone);
+                result.DateModified = result.DateModified.ToUniversalTime(ServerTimeZone);
+                result.LastRunRequestedDate = result.LastRunRequestedDate.ToUniversalTime(ServerTimeZone);
+                result.LastStartDate = result.LastStartDate.ToUniversalTime(ServerTimeZone);
+                result.LastStopDate = result.LastStopDate.ToUniversalTime(ServerTimeZone);
+                result.NextRunDate = result.NextRunDate.ToUniversalTime(ServerTimeZone);
             }
 
             return results;

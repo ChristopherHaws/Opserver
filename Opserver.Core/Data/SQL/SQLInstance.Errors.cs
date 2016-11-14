@@ -13,12 +13,10 @@ namespace StackExchange.Opserver.Data.SQL
                 {
                     var sql = GetFetchSQL<SQLErrorLogInfo>();
                     var results = conn.Query<SQLErrorLogInfo>(sql, new { minutesAgo }).AsList();
-
-                    var timezone = ServerProperties.Data.TimeZoneInfo;
-
+                    
                     foreach (var result in results)
                     {
-                        result.LogDate = result.LogDate.ToUniversalTime(timezone);
+                        result.LogDate = result.LogDate.ToUniversalTime(ServerTimeZone);
                     }
 
                     return results;

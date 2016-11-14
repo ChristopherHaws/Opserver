@@ -9,13 +9,11 @@ namespace StackExchange.Opserver.Data.SQL
         private Cache<List<SQLConnectionSummaryInfo>> _connectionsSummary;
         public Cache<List<SQLConnectionSummaryInfo>> ConnectionsSummary => _connectionsSummary ?? (_connectionsSummary = SqlCacheList<SQLConnectionSummaryInfo>(30.Seconds(), async items =>
         {
-            var timezone = ServerProperties.Data.TimeZoneInfo;
-
             var results = await items;
 
             foreach (var result in results)
             {
-                result.LastConnectTime = result.LastConnectTime.ToUniversalTime(timezone);
+                result.LastConnectTime = result.LastConnectTime.ToUniversalTime(ServerTimeZone);
             }
 
             return results;
@@ -24,14 +22,12 @@ namespace StackExchange.Opserver.Data.SQL
         private Cache<List<SQLConnectionInfo>> _connections;
         public Cache<List<SQLConnectionInfo>> Connections => _connections ?? (_connections = SqlCacheList<SQLConnectionInfo>(RefreshInterval, async items =>
         {
-            var timezone = ServerProperties.Data.TimeZoneInfo;
-
             var results = await items;
 
             foreach (var result in results)
             {
-                result.ConnectTime = result.ConnectTime.ToUniversalTime(timezone);
-                result.LoginTime = result.LoginTime.ToUniversalTime(timezone);
+                result.ConnectTime = result.ConnectTime.ToUniversalTime(ServerTimeZone);
+                result.LoginTime = result.LoginTime.ToUniversalTime(ServerTimeZone);
             }
 
             return results;

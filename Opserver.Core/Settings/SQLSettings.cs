@@ -63,6 +63,11 @@ namespace StackExchange.Opserver
             /// How many seconds before polling this node for status again
             /// </summary>
             public int? RefreshIntervalSeconds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time zone that the server is configured to use.
+            /// </summary>
+            public string TimeZone { get; set; }
         }
     }
 }

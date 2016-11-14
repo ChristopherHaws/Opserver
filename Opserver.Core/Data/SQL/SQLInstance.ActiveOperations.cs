@@ -18,7 +18,7 @@ namespace StackExchange.Opserver.Data.SQL
 
             return TimedCache("ActiveOperations-" + options.GetHashCode().ToString(),
                 conn => conn.Query<WhoIsActiveRow>(options.ToSQLQuery(), options, commandTimeout: 300)
-                                .Select(row => new ActiveOperation(row, ServerProperties.Data.TimeZoneInfo))
+                                .Select(row => new ActiveOperation(row, ServerTimeZone))
                                 .ToList(),
                 10.Seconds(), 5.Minutes());
         }

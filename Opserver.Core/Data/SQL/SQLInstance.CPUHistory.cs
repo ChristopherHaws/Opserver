@@ -15,12 +15,10 @@ namespace StackExchange.Opserver.Data.SQL
                 var sql = GetFetchSQL<ResourceEvent>();
                 var results = await conn.QueryAsync<ResourceEvent>(sql).ConfigureAwait(false);
                 CurrentCPUPercent = results.Count > 0 ? results.Last().ProcessUtilization : (int?) null;
-
-                var timezone = ServerProperties.Data.TimeZoneInfo;
-
+                
                 foreach (var result in results)
                 {
-                    result.EventTime = result.EventTime.ToUniversalTime(timezone);
+                    result.EventTime = result.EventTime.ToUniversalTime(ServerTimeZone);
                 }
 
                 return results;
