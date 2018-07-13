@@ -90,6 +90,9 @@ namespace StackExchange.Opserver.Data.SQL
         public LightweightCache<List<DatabaseIndex>> GetIndexInfoDetiled(string databaseName) =>
             DatabaseFetch<DatabaseIndex>(databaseName);
 
+        public LightweightCache<List<QueryPlanWarning>> GetQueryPlanWarnings(string databaseName) =>
+            DatabaseFetch<QueryPlanWarning>(databaseName);
+
         public Database GetDatabase(string databaseName) => Databases.Data?.FirstOrDefault(db => db.Name == databaseName);
 
         private LightweightCache<List<T>> DatabaseFetch<T>(string databaseName, TimeSpan? duration = null) where T : ISQLVersioned, new()
@@ -1295,6 +1298,47 @@ Select sc.name SchemaName,
  Where si.type In (0,1,2) /* heap, clustered, nonclustered */
 Order By sc.name, t.name, si.index_id
 Option (Recompile);";
+        }
+
+        public class QueryPlanWarning : ISQLVersioned
+        {
+            public string SchemaName { get; internal set; }
+            public string TableName { get; internal set; }
+            public decimal AvgTotalUserCost { get; internal set; }
+            public decimal AvgUserImpact { get; internal set; }
+            public int UserSeeks { get; internal set; }
+            public int UserScans { get; internal set; }
+            public int UniqueCompiles { get; internal set; }
+            public string EqualityColumns { get; internal set; }
+            public string InEqualityColumns { get; internal set; }
+            public string IncludedColumns { get; internal set; }
+            public decimal EstimatedImprovement { get; internal set; }
+            public Version MinVersion => SQLServerVersions.SQL2008.SP1;
+
+            public string GetFetchSQL(Version v)
+            {
+                return @"
+ Select s.name SchemaName,
+        o.name TableName,
+        avg_total_user_cost AvgTotalUserCost,
+        avg_user_impact AvgUserImpact,
+        user_seeks UserSeeks,
+        user_scans UserScans,
+		unique_compiles UniqueCompiles,
+		equality_columns EqualityColumns,
+		inequality_columns InEqualityColumns,
+		included_columns IncludedColumns,
+        avg_total_user_cost* avg_user_impact *(user_seeks + user_scans) EstimatedImprovement
+   From sys.dm_db_missing_index_details mid
+        Join sys.dm_db_missing_index_groups mig On mig.index_handle = mid.index_handle
+        Join sys.dm_db_missing_index_group_stats migs On migs.group_handle = mig.index_group_handle
+        Join sys.databases d On d.database_id = mid.database_id
+        Join sys.objects o On mid.object_id = o.object_id
+        Join sys.schemas s On o.schema_id = s.schema_id
+  Where d.name = @databaseName
+    And avg_total_user_cost * avg_user_impact * (user_seeks + user_scans) > 0
+  Order By EstimatedImprovement Desc";
+            }
         }
     }
 }

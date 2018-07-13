@@ -417,6 +417,9 @@
     <Content Include="Views\SQL\Databases.Modal.Views.cshtml">
       <DependentUpon>Databases.Modal.cshtml</DependentUpon>
     </Content>
+    <Content Include="Views\SQL\Databases.Modal.QueryPlanWarnings.cshtml">
+      <DependentUpon>Databases.Modal.cshtml</DependentUpon>
+    </Content>
     <Content Include="Views\SQL\Instance.Configuration.cshtml">
       <DependentUpon>Instance.cshtml</DependentUpon>
     </Content>

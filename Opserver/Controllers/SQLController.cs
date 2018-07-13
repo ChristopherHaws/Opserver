@@ -261,6 +261,9 @@ namespace StackExchange.Opserver.Controllers
                 case "storedprocedures":
                     vd.View = DatabasesModel.Views.StoredProcedures;
                     return View("Databases.Modal.StoredProcedures", vd);
+                case "queryplanwarnings":
+                    vd.View = DatabasesModel.Views.QueryPlanWarnings;
+                    return View("Databases.Modal.QueryPlanWarnings", vd);
             }
             return View("Databases.Modal.Tables", vd);
         }
