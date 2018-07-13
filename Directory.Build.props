@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- This suppression can be removed after Visual Studio 15.8 Preview 5 is released. Microsoft is removing the warning until net472 is broadly deployed. -->
+    <MSBuildWarningsAsMessages>NETSDK1069</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+</Project>
