@@ -1303,41 +1303,36 @@ Option (Recompile);";
         public class QueryPlanWarning : ISQLVersioned
         {
             public string SchemaName { get; internal set; }
-            public string TableName { get; internal set; }
-            public decimal AvgTotalUserCost { get; internal set; }
-            public decimal AvgUserImpact { get; internal set; }
-            public int UserSeeks { get; internal set; }
-            public int UserScans { get; internal set; }
-            public int UniqueCompiles { get; internal set; }
-            public string EqualityColumns { get; internal set; }
-            public string InEqualityColumns { get; internal set; }
-            public string IncludedColumns { get; internal set; }
-            public decimal EstimatedImprovement { get; internal set; }
+            public string ObjectName { get; internal set; }
+            public string ObjectType { get; internal set; }
+            public int RefCounts { get; internal set; }
+            public int UseCounts { get; internal set; }
+            //public string QueryText { get; internal set; }
+            //public string QueryPlan { get; internal set; }
+            public string Warnings { get; internal set; }
             public Version MinVersion => SQLServerVersions.SQL2008.SP1;
 
             public string GetFetchSQL(Version v)
             {
                 return @"
- Select s.name SchemaName,
-        o.name TableName,
-        avg_total_user_cost AvgTotalUserCost,
-        avg_user_impact AvgUserImpact,
-        user_seeks UserSeeks,
-        user_scans UserScans,
-		unique_compiles UniqueCompiles,
-		equality_columns EqualityColumns,
-		inequality_columns InEqualityColumns,
-		included_columns IncludedColumns,
-        avg_total_user_cost* avg_user_impact *(user_seeks + user_scans) EstimatedImprovement
-   From sys.dm_db_missing_index_details mid
-        Join sys.dm_db_missing_index_groups mig On mig.index_handle = mid.index_handle
-        Join sys.dm_db_missing_index_group_stats migs On migs.group_handle = mig.index_group_handle
-        Join sys.databases d On d.database_id = mid.database_id
-        Join sys.objects o On mid.object_id = o.object_id
-        Join sys.schemas s On o.schema_id = s.schema_id
-  Where d.name = @databaseName
-    And avg_total_user_cost * avg_user_impact * (user_seeks + user_scans) > 0
-  Order By EstimatedImprovement Desc";
+SELECT
+    OBJECT_SCHEMA_NAME(dm_exec_query_plan.objectid, dm_exec_query_plan.dbid) AS SchemaName,
+    OBJECT_NAME(dm_exec_query_plan.objectid, dm_exec_query_plan.dbid) AS ObjectName,
+    dm_exec_cached_plans.objtype AS ObjectType,
+    dm_exec_cached_plans.refcounts AS RefCounts,
+    dm_exec_cached_plans.usecounts AS UseCounts,
+    --dm_exec_sql_text.text AS QueryText,
+    --dm_exec_query_plan.query_plan AS QueryPlan,
+    dm_exec_query_plan.query_plan.query('declare namespace sp=""http://schemas.microsoft.com/sqlserver/2004/07/showplan""; //sp:Warnings') AS Warnings
+FROM
+    sys.dm_exec_cached_plans
+    CROSS APPLY sys.dm_exec_query_plan(dm_exec_cached_plans.plan_handle)
+    --CROSS APPLY sys.dm_exec_sql_text(dm_exec_cached_plans.plan_handle)
+WHERE
+    dm_exec_query_plan.dbid = DB_ID(@databaseName) AND
+    dm_exec_query_plan.query_plan.exist('declare namespace sp=""http://schemas.microsoft.com/sqlserver/2004/07/showplan""; //sp:Warnings') = 1
+ORDER BY
+    dm_exec_cached_plans.usecounts DESC";
             }
         }
     }
